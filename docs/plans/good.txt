@@ -1,0 +1,15 @@
+PostgreSQL 18.6, small seed, product 777, first execution after creating good index. Single execution, not a benchmark.
+
+Limit  (cost=0.42..77.93 rows=20 width=41) (actual time=0.034..0.058 rows=20.00 loops=1)
+  Buffers: shared hit=20 read=3
+  I/O Timings: shared read=0.022
+  ->  Index Scan using offers_good_idx on offers  (cost=0.42..1395.61 rows=360 width=41) (actual time=0.033..0.055 rows=20.00 loops=1)
+        Index Cond: ((product_id = '777'::bigint) AND (available = true))
+        Index Searches: 1
+        Buffers: shared hit=20 read=3
+        I/O Timings: shared read=0.022
+Planning:
+  Buffers: shared hit=43 read=1
+  I/O Timings: shared read=0.033
+Planning Time: 0.297 ms
+Execution Time: 0.076 ms

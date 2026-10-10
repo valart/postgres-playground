@@ -1,0 +1,21 @@
+PostgreSQL 18.6, small seed, product 777, first execution after creating poor index. Single execution, not a benchmark.
+
+Limit  (cost=32.81..679.55 rows=20 width=41) (actual time=50.129..50.131 rows=20.00 loops=1)
+  Buffers: shared hit=24 read=1774
+  I/O Timings: shared read=35.082
+  ->  Incremental Sort  (cost=32.81..11609.41 rows=358 width=41) (actual time=50.128..50.129 rows=20.00 loops=1)
+        Sort Key: current_price, id
+        Presorted Key: current_price
+        Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
+        Buffers: shared hit=24 read=1774
+        I/O Timings: shared read=35.082
+        ->  Index Scan using offers_poor_idx on offers  (cost=0.42..11593.30 rows=358 width=41) (actual time=50.027..50.077 rows=21.00 loops=1)
+              Index Cond: ((available = true) AND (product_id = '777'::bigint))
+              Index Searches: 1
+              Buffers: shared hit=24 read=1774
+              I/O Timings: shared read=35.082
+Planning:
+  Buffers: shared hit=63 read=1
+  I/O Timings: shared read=0.113
+Planning Time: 1.022 ms
+Execution Time: 50.163 ms

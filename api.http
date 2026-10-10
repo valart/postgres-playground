@@ -1,0 +1,64 @@
+@base = http://localhost:8080
+
+### On a fresh, empty database these entities have ID 1. After seed, use returned IDs.
+POST {{base}}/api/shops
+Content-Type: application/json
+
+{"name":"Example Shop"}
+
+###
+GET {{base}}/api/shops/1
+
+###
+POST {{base}}/api/products
+Content-Type: application/json
+
+{"name":"Mechanical Keyboard"}
+
+###
+GET {{base}}/api/products/1
+
+###
+POST {{base}}/api/offers/batch?mode=ordered&retry=false
+Content-Type: application/json
+
+{"offers":[{"shopId":1,"productId":1,"currentPrice":12999,"available":true}]}
+
+### PATCH supplies both currentPrice and available.
+PATCH {{base}}/api/offers/1
+Content-Type: application/json
+
+{"currentPrice":11999,"available":true}
+
+###
+GET {{base}}/api/products/1/offers?limit=20
+
+### Observations independently drive historical minima.
+POST {{base}}/api/price-observations/batch?mode=conditional
+Content-Type: application/json
+
+{"observations":[{"offerId":1,"observedPrice":11999},{"offerId":1,"observedPrice":13999}]}
+
+###
+GET {{base}}/api/offers/1/minimum
+
+### Deterministic, fresh keys; no seed needed.
+POST {{base}}/lab/demo-deadlock?mode=unordered&retry=false
+
+### New transactions for retry.
+POST {{base}}/lab/demo-deadlock?mode=unordered&retry=true
+
+###
+POST {{base}}/lab/demo-deadlock?mode=ordered
+
+### DESTRUCTIVE: replace all business data.
+POST {{base}}/lab/reset-and-seed?size=small
+
+###
+POST {{base}}/lab/index/poor
+
+###
+GET {{base}}/lab/explain-offers?productId=777
+
+###
+GET {{base}}/actuator/prometheus

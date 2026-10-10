@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: postgres-playground
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/priceradar}
+    username: ${DB_USER:priceradar}
+    password: ${DB_PASSWORD:priceradar}
+    hikari:
+      maximum-pool-size: 24
+      connection-timeout: 10000
+  mvc:
+    problemdetails:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        priceradar.offer.query: true
+        priceradar.observation.batch: true
+        priceradar.import.batch: true

@@ -1,0 +1,99 @@
+name: postgres-playground
+
+services:
+  postgres:
+    image: postgres:18.6-bookworm
+    environment:
+      POSTGRES_DB: priceradar
+      POSTGRES_USER: priceradar
+      POSTGRES_PASSWORD: priceradar
+    command: [postgres, -c, deadlock_timeout=200ms, -c, log_lock_waits=on, -c, shared_buffers=256MB, -c, track_io_timing=on]
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U priceradar -d priceradar"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 1g
+
+  app:
+    image: postgres-playground/app:1.0.0
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/priceradar
+      DB_USER: priceradar
+      DB_PASSWORD: priceradar
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 30
+    mem_limit: 768m
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.retention.time=2d]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports: ["127.0.0.1:9090:9090"]
+    depends_on:
+      app: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://localhost:9090/-/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: priceradar
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      prometheus: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 384m
+
+  load:
+    image: postgres-playground/load:1.0.0
+    profiles: [load]
+    build: ./loadgen
+    environment:
+      BASE_URL: http://app:8080
+      SCENARIO: ${SCENARIO:-reads}
+      MODE: ${MODE:-ordered}
+      WORKERS: ${WORKERS:-8}
+      BATCH_SIZE: ${BATCH_SIZE:-20}
+      DURATION: ${DURATION:-60}
+      WARMUP: ${WARMUP:-10}
+      ROUNDS: ${ROUNDS:-0}
+      OVERLAP: ${OVERLAP:-0.8}
+      RETRY: ${RETRY:-false}
+      NEW_MINIMUM_RATE: ${NEW_MINIMUM_RATE:-0.01}
+      PRODUCT_ID: ${PRODUCT_ID:-777}
+    depends_on:
+      app: {condition: service_healthy}
+    mem_limit: 384m
+    stop_grace_period: 5s
+
+volumes:
+  postgres-data:
+  prometheus-data:
+  grafana-data:

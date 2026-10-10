@@ -1,0 +1,18 @@
+PostgreSQL 18.6, small seed, product 777, immediately after seeding. Single execution, not a benchmark.
+
+Limit  (cost=2271.40..2271.45 rows=20 width=41) (actual time=1.085..1.087 rows=20.00 loops=1)
+  Buffers: shared hit=1675
+  ->  Sort  (cost=2271.40..2272.30 rows=359 width=41) (actual time=1.084..1.085 rows=20.00 loops=1)
+        Sort Key: current_price, id
+        Sort Method: top-N heapsort  Memory: 27kB
+        Buffers: shared hit=1675
+        ->  Index Scan using offers_shop_product_key on offers  (cost=0.42..2261.85 rows=359 width=41) (actual time=0.023..1.054 rows=360.00 loops=1)
+              Index Cond: (product_id = '777'::bigint)
+              Filter: available
+              Rows Removed by Filter: 40
+              Index Searches: 402
+              Buffers: shared hit=1675
+Planning:
+  Buffers: shared hit=42
+Planning Time: 0.155 ms
+Execution Time: 1.101 ms
