@@ -1,11 +1,16 @@
 {
   "uid": "priceradar-deadlocks",
   "title": "PriceRadar • INSERT deadlocks",
+  "description": "Compare overlapping unordered imports, bounded whole-transaction retries, and consistent insertion order. See docs/experiments.md for the complete procedure.",
+  "links": [
+    {"title": "PriceRadar dashboards", "type": "dashboards", "tags": ["PriceRadar"], "asDropdown": true, "includeVars": false, "keepTime": true},
+    {"title": "Prometheus targets", "type": "link", "url": "http://localhost:9090/targets", "targetBlank": true}
+  ],
   "tags": [
     "PriceRadar"
   ],
   "schemaVersion": 41,
-  "version": 1,
+  "version": 2,
   "refresh": "5s",
   "timezone": "browser",
   "time": {
@@ -14,6 +19,16 @@
   },
   "editable": true,
   "panels": [
+    {
+      "id": 100,
+      "title": "Run this experiment",
+      "type": "text",
+      "gridPos": {"x": 0, "y": 32, "w": 24, "h": 7},
+      "options": {
+        "mode": "markdown",
+        "content": "### 1. Reproduce\nRun `make up`, `make stop-load`, `make reset-imports`, then `make demo-deadlock`. Inspect the response and `make logs`: one transaction is aborted with 40P01.\n\n### 2. Compare\nRun `make load-deadlock MODE=unordered DURATION=60 RETRY=false`, repeat with `RETRY=true`, then use `MODE=ordered RETRY=false`. Keep WORKERS, BATCH_SIZE, and OVERLAP identical. Compare deadlocks, attempts/retries, successful batches, committed rows, and batch p95 over each run's own time range. No source edit is required.\n\n### 3. Finish\nRun `make stop-load` and `make reset-imports` (deletes reserved import data only). Load deadlocks are probabilistic; the demo is deterministic. Five-second samples can miss short waits. Full commands and caveats: `docs/experiments.md`."
+      }
+    },
     {
       "id": 1,
       "title": "Deadlocks / second",

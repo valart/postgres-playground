@@ -34,6 +34,19 @@ make demo-deadlock-ordered
 
 All published ports bind to localhost. Grafana provisions its Prometheus data source and four dashboards into the PriceRadar folder automatically. Database statistics are collected by a small SQL collector in the app, so a separate PostgreSQL exporter is unnecessary. The CLI load container starts only on demand.
 
+### Experiment guides and dashboards
+
+Follow the [step-by-step experiment guide](docs/experiments.md) for each case's startup commands, expected observations, improved mode, code locations, and cleanup. No dashboard imports or source edits are required to run comparisons.
+
+| Case | Provisioned Grafana dashboard |
+| --- | --- |
+| Concurrent INSERT deadlocks | [INSERT deadlocks](http://localhost:3000/d/priceradar-deadlocks) |
+| Composite index matching | [Composite indexes](http://localhost:3000/d/priceradar-indexes) |
+| Unnecessary minimum-price updates | [Historical minimum UPDATEs](http://localhost:3000/d/priceradar-updates) |
+| Shared request/workload health | [Application and workload](http://localhost:3000/d/priceradar-application) |
+
+Sign in with `admin` / `priceradar`. Dashboards refresh every five seconds and include navigation; each scenario has a **Run this experiment** panel. Prometheus scrapes metrics automatically and provides a [Targets page](http://localhost:9090/targets) for checking collection. The optional load target is normally down between runs.
+
 `make down` stops and removes containers **without deleting volume data**. `make reset` **deletes this Compose project's database and monitoring volumes**. `make seed` **replaces all business data** with the fixed demo dataset. Stop loads before any reset or index switch. Do not run multiple scenarios simultaneously during comparisons.
 
 Suggested Docker resources: 4 CPUs, 4 GB RAM, and 5–8 GB free disk including images/build cache. Individual service memory caps total about 3 GB with load. The small dataset has 400 shops × 1,000 products = **400,000 offers**; allow roughly 100–300 MB for database data/indexes and additional WAL/storage headroom. `make seed SIZE=large` creates 1,000 × 3,000 = **3 million offers**; allow 1–2 GB database headroom and 8 GB Docker RAM if increasing service limits for large experiments. Initial image pulls/builds can take several minutes; small seed usually takes seconds to tens of seconds, large seed can take minutes. These are capacity estimates, not benchmark results.

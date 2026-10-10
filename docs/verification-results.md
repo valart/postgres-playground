@@ -61,3 +61,11 @@ The three-million-offer dataset and prolonged resource-exhaustion behavior have 
 The controllers are now separate classes for shops, products, offers, minima and price observations. Request/response records each have their own file in a domain package, including lab responses. Shops and products also have separate services and repositories. Simple controller/service constructors use Lombok `@RequiredArgsConstructor`; services configuring transactions and metrics retain explicit constructors.
 
 `clean bootJar` and the Docker build both passed with Lombok 1.18.46 annotation processing. The executable JAR has no Lombok runtime library. The rebuilt application started healthy. Manual calls created/read a shop and product, registered/read/patched an offer, processed observations and retrieved its minimum through the original URLs with the original JSON fields. Unordered, ordered and retried deadlock demonstrations still produced the expected outcomes. Only the temporary rows created by these checks were removed afterward; existing data was preserved. No automated test files were added.
+
+## Dashboard and walkthrough update — 2026-10-10
+
+All four dashboard JSON files parsed successfully, and `docker compose config --quiet` passed. The running Grafana instance loaded the revised file-provisioned definitions: all four expose navigation links, and each of the three scenario dashboards contains a Run this experiment text panel. Provisioned dashboard UIDs match the direct links in the README and experiment guide.
+
+All 45 metric query expressions executed successfully through Grafana's Prometheus data-source proxy, substituting a fifteen-minute interval for the dashboard range variable. Prometheus reported the application target UP and the SQL collector gauge was 1. The optional load target was DOWN because no generator was running, which is expected. Query success does not imply current samples for an inactive workload.
+
+This update did not reseed data, rerun workloads, or inspect browser rendering. Previously verified scenario outcomes remain documented above; the expanded guide provides independent setup, comparison, inspection, and cleanup commands for each case. No automated tests were added.

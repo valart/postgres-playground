@@ -1,11 +1,16 @@
 {
   "uid": "priceradar-indexes",
   "title": "PriceRadar • Composite indexes",
+  "description": "Compare baseline, poorly matched, and well matched indexes using real plans and equivalent read workloads. Index state is identified by the selected run time range, not a metric label.",
+  "links": [
+    {"title": "PriceRadar dashboards", "type": "dashboards", "tags": ["PriceRadar"], "asDropdown": true, "includeVars": false, "keepTime": true},
+    {"title": "Prometheus targets", "type": "link", "url": "http://localhost:9090/targets", "targetBlank": true}
+  ],
   "tags": [
     "PriceRadar"
   ],
   "schemaVersion": 41,
-  "version": 1,
+  "version": 2,
   "refresh": "5s",
   "timezone": "browser",
   "time": {
@@ -14,6 +19,16 @@
   },
   "editable": true,
   "panels": [
+    {
+      "id": 100,
+      "title": "Run this experiment",
+      "type": "text",
+      "gridPos": {"x": 0, "y": 24, "w": 24, "h": 7},
+      "options": {
+        "mode": "markdown",
+        "content": "### 1. Baseline\nRun `make up`, `make stop-load`, `make seed` (replaces business data), and `make index-none`. Run `make explain-offers` and `make load-reads WORKERS=8 WARMUP=10 DURATION=60 PRODUCT_ID=777`.\n\n### 2. Compare indexes\nRepeat the plan and identical load after `make index-poor`, then after `make index-good`. No source edit is required. Save each plan and run time range. Compare query p50/p95/p99, query throughput, measured client throughput, and buffers in EXPLAIN. Select each run separately: metrics have no index-variant label.\n\n### 3. Finish\nRun `make stop-load` and `make index-none`. Keep constraint indexes. Read the actual chosen plan; do not force scans or infer physical disk reads from database block reads. Full procedure: `docs/experiments.md`."
+      }
+    },
     {
       "id": 1,
       "title": "Offer query p50 / p95 / p99",
